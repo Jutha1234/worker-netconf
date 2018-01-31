@@ -20,19 +20,6 @@ type Session struct {
 	sshClient   *ssh.Client
 }
 
-func (clientConfig *Session) NewClient(target string, config *ssh.ClientConfig) (*Session, error) {
-
-	var err error
-	var session Session
-
-	session.sshClient, err = ssh.Dial("tcp", target, config)
-	if err != nil {
-		return nil, err
-	}
-
-	return &session, nil
-}
-
 // NewSession creates a new session ready for use with the NETCONF SSH subsystem.
 // It uses the credentials given by the ssh.ClientConfig argument to connect to
 // the target.
@@ -108,6 +95,19 @@ func (s *Session) NewReplyReader() *ReplyReader {
 // Most will use ReplyReader or Decoder.
 func (s *Session) Read(p []byte) (n int, err error) {
 	return s.reader.Read(p)
+}
+
+func (clientConfig *Session) NewClient(target string, config *ssh.ClientConfig) (*Session, error) {
+
+	var err error
+	var session Session
+
+	session.sshClient, err = ssh.Dial("tcp", target, config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &session, nil
 }
 
 // Write is the most basic implementation of the io.Writer
