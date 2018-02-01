@@ -28,7 +28,7 @@ func NewClient(config *ssh.ClientConfig, target string) (*ssh.Client, error) {
 		return nil, err
 	}
 
-	return &s.sshClient, nil
+	return s.sshClient, nil
 }
 
 // NewSession creates a new session ready for use with the NETCONF SSH subsystem.
