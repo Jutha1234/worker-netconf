@@ -20,6 +20,17 @@ type Session struct {
 	sshClient   *ssh.Client
 }
 
+func NewClient(config *ssh.ClientConfig, target string) (*ssh.Client, error) {
+	var s Session
+	var err error
+	s.sshClient, err = ssh.Dial("tcp", target, config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &s.sshClient, nil
+}
+
 // NewSession creates a new session ready for use with the NETCONF SSH subsystem.
 // It uses the credentials given by the ssh.ClientConfig argument to connect to
 // the target.
@@ -29,6 +40,8 @@ func NewSession(clientConfig *ssh.ClientConfig, target string) (*Session, *Hello
 
 	var session Session
 	var err error
+
+	fmt.Println("target :", target)
 
 	session.sshClient, err = ssh.Dial("tcp", target, clientConfig)
 	if err != nil {
@@ -74,6 +87,31 @@ func NewSession(clientConfig *ssh.ClientConfig, target string) (*Session, *Hello
 	return &session, &helloMessage, nil
 }
 
+/*func (t *Session) setupSession() error {
+	var err error
+
+	t.sshSession, err = t.sshClient.NewSession()
+	if err != nil {
+		return err
+	}
+
+	writer, err := t.sshSession.StdinPipe()
+	if err != nil {
+		return err
+	}
+
+	reader, err := t.sshSession.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	if err := t.sshSession.RequestSubsystem("netconf"); err != nil {
+		return err
+	}
+
+	return nil
+}*/
+
 // NewReplyReader returns a ReplyReader that reads exactly one
 // NETCONF RPC Reply from the session's stdout stream. The ReplyReader
 // strictly satisfies io.Reader interface by reading from the stream
@@ -95,19 +133,6 @@ func (s *Session) NewReplyReader() *ReplyReader {
 // Most will use ReplyReader or Decoder.
 func (s *Session) Read(p []byte) (n int, err error) {
 	return s.reader.Read(p)
-}
-
-func (clientConfig *Session) NewClient(target string, config *ssh.ClientConfig) (*Session, error) {
-
-	var err error
-	var session Session
-
-	session.sshClient, err = ssh.Dial("tcp", target, config)
-	if err != nil {
-		return nil, err
-	}
-
-	return &session, nil
 }
 
 // Write is the most basic implementation of the io.Writer
